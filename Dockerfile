@@ -7,9 +7,6 @@ ARG BASE_IMAGE="registry.access.redhat.com/ubi8/nodejs-14:latest"
 
 FROM ${BASE_IMAGE}
 
-## Build args to be used at this step
-ARG SOURCE_CODE
-
 LABEL io.opendatahub.component="odh-dashboard" \
       io.k8s.display-name="odh-dashboard" \
       name="open-data-hub/odh-dashboard-ubi8" \
