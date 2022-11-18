@@ -27,6 +27,13 @@ export default fp(async (fastify: FastifyInstance) => {
     fastify.log.error(e, 'Failed to retrieve current namespace');
   }
 
+  let currentToken;
+  try {
+    currentToken = await getCurrentToken(currentUser);
+  } catch (e) {
+    fastify.log.error(e, 'Failed to retrieve current token');
+  }
+
   let clusterID;
   try {
     const clusterVersion = await customObjectsApi.getClusterCustomObject(
@@ -64,6 +71,7 @@ export default fp(async (fastify: FastifyInstance) => {
     batchV1Api,
     customObjectsApi,
     currentUser,
+    currentToken,
     clusterID,
     clusterBranding,
     rbac,
@@ -90,6 +98,25 @@ const getCurrentNamespace = async () => {
       resolve(process.env.OC_PROJECT);
     } else {
       resolve(currentContext.split('/')[0]);
+    }
+  });
+};
+
+const getCurrentToken = async (currentUser: User) => {
+  return new Promise((resolve, reject) => {
+    if (currentContext === 'inClusterContext') {
+      fs.readFile(
+        // '/var/run/secrets/kubernetes.io/serviceaccount/token',
+        currentUser?.authProvider?.config?.tokenFile,
+        (err, data) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(data);
+        },
+      );
+    } else if (DEV_MODE) {
+      resolve(currentUser.token);
     }
   });
 };
