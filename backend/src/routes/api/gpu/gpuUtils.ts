@@ -37,8 +37,9 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
     areGpusConfigured = true;
     const gpuDataResponses = [];
     for (let i = 0; i < gpuPodList.items.length; i++) {
+      fastify.log.debug(`### --nvidia-dcgm-exporter pod: ${gpuPodList.items[i].metadata.name} -- ${gpuPodList.items[i].status.podIP}`);
       gpuDataResponses.push(
-        getGPUData(gpuPodList.items[i].status.podIP, fastify.kube.currentUser.token),
+        getGPUData(fastify, gpuPodList.items[i].status.podIP, fastify.kube.currentUser.token),
       );
     }
 
@@ -69,6 +70,7 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
 };
 
 export const getGPUData = async (
+  fastify: KubeFastifyInstance,
   podIP: string,
   token: string,
 ): Promise<{ code: number; response: number | any }> => {
@@ -83,6 +85,7 @@ export const getGPUData = async (
       protocol: 'https:',
       rejectUnauthorized: false,
     };
+    fastify.log.debug(`curl -k -H 'Authorization: ${options.headers.Authorization}' '${options.protocol}//${options.hostname}:${options.port}${options.path}'`)
     const httpsRequest = https
       .get(options, (res) => {
         res.setEncoding('utf8');
@@ -119,6 +122,7 @@ const getGPUScaling = async (fastify: KubeFastifyInstance): Promise<gpuScale[]> 
 
   const machineSets = [];
   for (let i = 0; i < autoscalerList.items.length; i++) {
+    fastify.log.debug(`### --autoscaler: ${autoscalerList.items[i].metadata.name}`);
     const machineSetName = autoscalerList.items[i].spec.scaleTargetRef.name; //also gives info about kind and apiversion if needed in the future
     machineSets.push(
       fastify.kube.customObjectsApi
@@ -140,6 +144,7 @@ const getGPUScaling = async (fastify: KubeFastifyInstance): Promise<gpuScale[]> 
   await Promise.all(machineSets).then((msList) => {
     for (let i = 0; i < msList.length; i++) {
       const machineSet = msList[i].body as MachineSet;
+      fastify.log.debug(`### --machineSet: ${machineSet?.metadata.name} -- ${machineSet?.metadata.annotations?.['machine.openshift.io/GPU']}`)
       const gpuAmount = Number(machineSet?.metadata.annotations?.['machine.openshift.io/GPU']);
       if (gpuAmount > 0) {
         scalingList.push({
