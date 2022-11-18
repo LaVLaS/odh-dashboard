@@ -74,8 +74,10 @@ export const getGPUData = async (
 ): Promise<{ code: number; response: number | any }> => {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'thanos-querier.openshift-monitoring.svc.cluster.local',
-      port: 9091,
+      //hostname: 'thanos-querier.openshift-monitoring.svc.cluster.local',
+      //port: 9091,
+      hostname: 'thanos-querier-openshift-monitoring.apps.lvl-aws-stage.mknt.s1.devshift.org',
+      port: 443,
       //Encode the raw prometheus query to remove any need for manual encoding
       path: encodeURI(`/api/v1/query?query=count (count by (UUID,GPU_I_ID)(DCGM_FI_PROF_GR_ENGINE_ACTIVE{instance="${podIP}:9400"}) or vector(0))-count (count by (UUID,GPU_I_ID)(DCGM_FI_PROF_GR_ENGINE_ACTIVE{instance="${podIP}:9400",exported_pod=~".+"}) or vector(0))`),
       headers: {
