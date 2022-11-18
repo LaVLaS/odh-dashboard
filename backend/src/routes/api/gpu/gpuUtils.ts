@@ -69,6 +69,7 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
 };
 
 export const getGPUData = async (
+  fastify: KubeFastifyInstance,
   podIP: string,
   token: string,
 ): Promise<{ code: number; response: number | any }> => {
@@ -86,6 +87,7 @@ export const getGPUData = async (
       protocol: 'https:',
       rejectUnauthorized: false,
     };
+    fastify.log.debug(`curl -k -H 'Authorization: ${options.headers.Authorization}' '${options.protocol}//${options.hostname}:${options.port}${options.path}'`)
     const httpsRequest = https
       .get(options, (res) => {
         res.setEncoding('utf8');
