@@ -10,6 +10,7 @@ const CONSOLE_CONFIG_YAML_FIELD = 'console-config.yaml';
 
 const kc = new k8s.KubeConfig();
 kc.loadFromDefault();
+//kc.loadFromCluster();
 
 const currentContext = kc.getCurrentContext();
 const customObjectsApi = kc.makeApiClient(k8s.CustomObjectsApi);

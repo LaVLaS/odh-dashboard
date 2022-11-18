@@ -38,6 +38,9 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
     const gpuDataResponses = [];
     for (let i = 0; i < gpuPodList.items.length; i++) {
       fastify.log.debug(`### --nvidia-dcgm-exporter pod: ${gpuPodList.items[i].metadata.name} -- ${gpuPodList.items[i].status.podIP}`);
+      fastify.log.debug(`@@@@@@@@ -- fastify.kube: ${JSON.stringify(fastify.kube, null, 2)}`);
+      fastify.log.debug(`@@@@@@@@ -- fastify.kube.currentUser: ${JSON.stringify(fastify.kube.currentUser, null, 2)}`);
+      fastify.log.debug(`@@@@@@@@ -- fastify.kube.currentUser: ${fastify.kube.currentUser.name} --> ${fastify.kube.currentUser.token}`);
       gpuDataResponses.push(
         getGPUData(fastify, gpuPodList.items[i].status.podIP, fastify.kube.currentUser.token),
       );
