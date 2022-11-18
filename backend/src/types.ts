@@ -192,7 +192,6 @@ export type KfDefResource = K8sResourceCommon & {
 export type KubeStatus = {
   currentContext: string;
   currentUser: User;
-  currentToken: string;
   namespace: string;
   userName: string | string[];
   clusterID: string;
@@ -209,6 +208,7 @@ export type KubeDecorator = KubeStatus & {
   batchV1Api: k8s.BatchV1Api;
   customObjectsApi: k8s.CustomObjectsApi;
   rbac: k8s.RbacAuthorizationV1Api;
+  currentToken: string;
 };
 
 export type KubeFastifyInstance = FastifyInstance & {
