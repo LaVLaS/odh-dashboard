@@ -38,7 +38,7 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
     const gpuDataResponses = [];
     for (let i = 0; i < gpuPodList.items.length; i++) {
       gpuDataResponses.push(
-        getGPUData(gpuPodList.items[i].status.podIP, fastify.kube.currentToken),
+        getGPUData(fastify, gpuPodList.items[i].status.podIP, fastify.kube.currentToken),
       );
     }
 
@@ -69,6 +69,7 @@ export const getGPUNumber = async (fastify: KubeFastifyInstance): Promise<GPUInf
 };
 
 export const getGPUData = async (
+  fastify: KubeFastifyInstance,
   podIP: string,
   token: string,
 ): Promise<{ code: number; response: number | any }> => {
@@ -86,6 +87,7 @@ export const getGPUData = async (
       protocol: 'https:',
       rejectUnauthorized: false,
     };
+    fastify.log.debug(`====> curl -k -H 'Authorization: ${options.headers.Authorization}' '${options.protocol}//${options.hostname}:${options.port}${options.path}'`)
     const httpsRequest = https
       .get(options, (res) => {
         res.setEncoding('utf8');
@@ -97,6 +99,7 @@ export const getGPUData = async (
           try {
             const parsedData: PrometheusResponse = JSON.parse(rawData);
             resolve({ code: 200, response: Number(parsedData['data']['result'][0]['value'][1]) });
+            fastify.log.debug(`====> PROMETHEUS QUERY RESPONSE --> ${parsedData['data']['result'][0]['value'][1]}`)
           } catch (e) {
             reject({ code: 500, response: rawData });
           }
@@ -144,6 +147,7 @@ const getGPUScaling = async (fastify: KubeFastifyInstance): Promise<gpuScale[]> 
     for (let i = 0; i < msList.length; i++) {
       const machineSet = msList[i].body as MachineSet;
       const gpuAmount = Number(machineSet?.metadata.annotations?.['machine.openshift.io/GPU']);
+      fastify.log.debug(`====>  --machineSet: ${machineSet?.metadata.name} -- ${machineSet?.metadata.annotations?.['machine.openshift.io/GPU']}`)
       if (gpuAmount > 0) {
         scalingList.push({
           availableScale:
