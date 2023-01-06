@@ -20,9 +20,10 @@ jobs:
       - name: Login to quay.io
         shell: bash
         env:
-          QUAY_TOKEN: ${{ secrets.QUAY_ROBOT_TOKEN }}
+          QUAY_USERNAME: ${{ secrets.QUAY_BOT_USERNAME }}
+          QUAY_TOKEN: ${{ secrets.QUAY_BOT_PASSWORD }}
         run: |
-         skopeo login quay.io -u opendatahub+odh_dashboard -p ${QUAY_TOKEN}
+         skopeo login quay.io -u ${QUAY_USERNAME} -p ${QUAY_TOKEN}
       - name: Get latest tag name
         id: tag
         run: echo "tag=$(git describe --tags)" >> $GITHUB_OUTPUT
@@ -34,5 +35,6 @@ jobs:
         env:
           TAG: ${{ steps.tag.outputs.tag }}
           HASH: ${{ steps.hash.outputs.hash }}
+          IMAGE_REPO: ${{ secrets.QUAY_IMAGE_REPO }}
         run: |
-          skopeo copy docker://quay.io/opedatahub/odh-dashboard:main-${{ env.HASH }} docker://quay.io/opendatahub/odh-dashboard:${{ env.TAG }}
+          skopeo copy docker://${IMAGE_REPO}:main-${{ env.HASH }} docker://${IMAGE_REPO}:${{ env.TAG }}
