@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+commonLabels:
+  app: odh-dashboard
+  app.kubernetes.io/part-of: odh-dashboard
+resources:
+  - ../../base
+patches:
+  - patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/volumeMounts
+        value:
+          - name: odh-trusted-ca-bundle
+            mountPath: /etc/pki/ca-trust/extracted/pem
+            readOnly: true
+      - op: add
+        path: /spec/template/spec/containers/1/volumeMounts/-
+        value:
+          name: odh-trusted-ca-bundle
+          mountPath: /etc/pki/ca-trust/extracted/pem
+          readOnly: true
+      - op: add
+        path: /spec/template/spec/volumes/-
+        value:
+          - name: odh-trusted-ca-bundle
+            configMap:
+              name: odh-trusted-ca-bundle
+              items:
+                - key: ca-bundle.crt
+                  path: tls-ca-bundle.pem
+    target:
+      kind: Deployment
